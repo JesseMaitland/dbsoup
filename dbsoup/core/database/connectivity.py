@@ -58,11 +58,19 @@ class BaseDbClient(ABC):
 
     def create_tables(self) -> None:
         for ddl in self.dialect.create_tables.split(";"):
-            self.execute_ddl(ddl)
+            ddl = ddl.strip()
+            if ddl:
+                ddl = f"{ddl};"
+                print(ddl)
+                self.execute_ddl(ddl)
 
     def drop_tables(self) -> None:
         for ddl in self.dialect.drop_tables.split(";"):
-            self.execute_ddl(ddl)
+            ddl = ddl.strip()
+            if ddl:
+                ddl = f"{ddl};"
+                print(ddl)
+                self.execute_ddl(ddl)
 
 
 TypeDbClient = TypeVar('TypeDbClient', bound=BaseDbClient)

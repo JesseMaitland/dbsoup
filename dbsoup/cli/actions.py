@@ -13,6 +13,11 @@ def init(cmd: Namespace) -> None:
     db_client.init_db()
 
 
+def destroy(cmd: Namespace) -> None:
+    print("Destroying dbsoup database")
+    db_client.destroy_db()
+
+
 def new(cmd: Namespace) -> None:
     print("new command")
 

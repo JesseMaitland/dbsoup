@@ -21,6 +21,9 @@ def parse_args() -> Namespace:
     init_parser = sub_parsers.add_parser("init")
     init_parser.set_defaults(func=actions.init)
 
+    destroy_parser = sub_parsers.add_parser("destroy")
+    destroy_parser.set_defaults(func=actions.destroy)
+
     new_parser = sub_parsers.add_parser("new")
     new_parser.set_defaults(func=actions.new)
 
