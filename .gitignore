@@ -56,3 +56,6 @@ coverage.xml
 
 *.env
 dbsoup.db
+.github
+venv
+database

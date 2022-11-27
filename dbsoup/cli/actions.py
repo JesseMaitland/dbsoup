@@ -1,12 +1,18 @@
+import getpass
+from datetime import datetime
 from argparse import Namespace
+from dbsoup.environment import TemplateLoader
 from dbsoup.environment.variables import DBSOUP_DIALECT, DBSOUP_CONNECTION_STRING
 from dbsoup.core.database.clients import get_db_client
-from dbsoup.core.project import DbSoupProject
+from dbsoup.core.project import DbSoupProject, Migration
+
 
 __version__ = "0.0.0"
 
+
 db_client = get_db_client(DBSOUP_DIALECT, DBSOUP_CONNECTION_STRING)
 dbsoup_project = DbSoupProject()
+template_loader = TemplateLoader()
 
 
 def init(cmd: Namespace) -> None:
@@ -22,13 +28,27 @@ def destroy(cmd: Namespace) -> None:
     print("Destroying dbsoup directories")
     dbsoup_project.destroy_project()
 
+
 def new(cmd: Namespace) -> None:
-    print("new command")
+    migration = Migration(name=cmd.name)
+
+    params = {
+        "name": migration.name,
+        "date": datetime.now().isoformat(sep=" ", timespec="seconds"),
+        "user": getpass.getuser()
+    }
+
+    content = template_loader.get_template("migration.template.sql")
+    migration.create(content.render(**params))
 
 
 def up(cmd: Namespace) -> None:
     print("up command")
+    migrations = dbsoup_project.migrations()
 
+    m = migrations[1669530638]
+    meta = m.meta()
+    print(meta.created_at)
 
 def down(cmd: Namespace) -> None:
     print("down command")
