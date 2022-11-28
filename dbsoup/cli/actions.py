@@ -43,17 +43,23 @@ def new(cmd: Namespace) -> None:
 
 
 def up(cmd: Namespace) -> None:
-    print("up command")
-    migrations = dbsoup_project.migrations()
-    results = db_client.execute_query(db_client.dialect.migrations)
-    print(results)
-    exit()
-    m = migrations[1669617573]
 
-    t = template_loader.get_template("sqlite/insert/migrations.sql")
-    c = t.render(migration=m)
-    print(c)
-    db_client.execute_statement(c)
+    migrations = dbsoup_project.migrations()
+    applied_migrations = db_client.get_applied_migrations()
+    import pdb; pdb.set_trace()
+    migrations_to_apply = []
+    for key, migration in migrations.items():
+        if key not in applied_migrations:
+            migrations_to_apply.append(migration)
+
+    migrations_to_apply.sort(key=lambda x: x.key)
+    insert_template = template_loader.get_template("sqlite/insert/migrations.sql")
+
+    for migration in migrations_to_apply:
+        db_client.execute_statement(migration.up())
+
+        insert_statement = insert_template.render(migration=migration, meta=migration.meta())
+        db_client.execute_statement(insert_statement)
 
 
 def down(cmd: Namespace) -> None:

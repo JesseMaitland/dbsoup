@@ -10,6 +10,7 @@ from datetime import datetime
 DEFAULT_ROOT_DIRECTORY = Path.cwd() / "database"
 DEFAULT_MIGRATIONS_DIRECTORY = DEFAULT_ROOT_DIRECTORY / "migrations"
 
+
 class MigrationMetaData:
 
     def __init__(self, content: str) -> None:
@@ -21,6 +22,10 @@ class MigrationMetaData:
         self.team_name = self._raw_meta["team_name"]
         self.auto_commit = self._raw_meta.get("auto_commit", True) == "True"
         self.feature = self._raw_meta.get("feature")
+        self.what = self._raw_meta.get("what")
+        self.why = self._raw_meta.get("why")
+        self.description = self._raw_meta.get("description")
+        self.ticket = str(self._raw_meta.get("ticket"))
 
     @staticmethod
     def parse_meta_data(content: str) -> Dict[str, str]:
@@ -44,22 +49,33 @@ class Migration:
         key, name = filename.replace(".sql", "").split("--")
         return cls(name=name, key=int(key))
 
-    def get_migration_filename(self) -> str:
+    @property
+    def filename(self) -> str:
         if not self.key:
             now = str(datetime.now().timestamp()).split(".")[0]
             return f"{now}--{self.name}.sql"
         return f"{self.key}--{self.name}.sql"
 
+    @property
+    def path(self) -> Path:
+        return self.migrations_directory.joinpath(self.filename)
+
+    @property
+    def content(self) -> str:
+        return self.path.read_text()
+
     def create(self, content: str) -> None:
-        file_name = self.get_migration_filename()
-        migration_path = self.migrations_directory.joinpath(file_name)
-        migration_path.touch(exist_ok=True)
-        migration_path.write_text(content)
+        self.path.touch(exist_ok=True)
+        self.path.write_text(content)
 
     def meta(self) -> MigrationMetaData:
-        filename = self.get_migration_filename()
-        content = self.migrations_directory.joinpath(filename).read_text()
-        return MigrationMetaData(content)
+        return MigrationMetaData(self.content)
+
+    def up(self) -> str:
+        return self.content.partition("--<migrate: up>")[2].partition("--<migrate: down>")[0]
+
+    def down(self) -> str:
+        return self.content.partition("--<migrate: down>")[2]
 
 
 class DbSoupProject:

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, TypeVar, Tuple
+from typing import Any, TypeVar, Tuple, List
 
 
 SQL_DIALECTS_PATH = Path(__file__).absolute().parent / "dialects"
@@ -58,6 +58,9 @@ class BaseDbClient(ABC):
     @abstractmethod
     def destroy_db(self) -> None:
         pass
+
+    def get_applied_migrations(self) -> List[int]:
+        return [i[0] for i in self.execute_query(self.dialect.migrations)]
 
     def create_schema(self) -> None:
         self.execute_statement(self.dialect.create_schema)

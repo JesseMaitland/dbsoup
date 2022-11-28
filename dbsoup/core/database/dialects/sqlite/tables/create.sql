@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS migrations
     what          TEXT,
     why           TEXT,
     description   TEXT,
-    links         TEXT,
+    ticket        TEXT,
     up            TEXT,
     down          TEXT
     executed_at   TEXT DEFAULT CURRENT_TIMESTAMP
