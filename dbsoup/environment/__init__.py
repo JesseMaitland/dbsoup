@@ -1,4 +1,4 @@
-from jinja2 import Environment, PackageLoader, Template
+from jinja2 import Environment, PackageLoader, Template, FileSystemLoader
 
 
 class TemplateLoader:
@@ -14,5 +14,5 @@ class TemplateLoader:
         used to get a jinja2 templating environment.
         Returns: Jinja2 Environment
         """
-        loader = PackageLoader(package_name="dbsoup", package_path="templates")
+        loader = PackageLoader(package_name="dbsoup", package_path="core/database/dialects")
         return Environment(loader=loader, trim_blocks=True, lstrip_blocks=True)

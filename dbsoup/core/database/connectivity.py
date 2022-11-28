@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Any, TypeVar, Tuple
+
 
 SQL_DIALECTS_PATH = Path(__file__).absolute().parent / "dialects"
 
@@ -27,6 +28,10 @@ class SqlDialect:
     def drop_tables(self) -> str:
         return self.dialect_path.joinpath("tables/drop.sql").read_text()
 
+    @property
+    def migrations(self) -> str:
+        return self.dialect_path.joinpath("queries/migrations.sql").read_text()
+
 
 class BaseDbClient(ABC):
 
@@ -39,7 +44,11 @@ class BaseDbClient(ABC):
         pass
 
     @abstractmethod
-    def execute_ddl(self, ddl: str) -> None:
+    def execute_statement(self, ddl: str) -> None:
+        pass
+
+    @abstractmethod
+    def execute_query(self, query: str) -> Tuple[Any]:
         pass
 
     @abstractmethod
@@ -51,10 +60,10 @@ class BaseDbClient(ABC):
         pass
 
     def create_schema(self) -> None:
-        self.execute_ddl(self.dialect.create_schema)
+        self.execute_statement(self.dialect.create_schema)
 
     def drop_schema(self) -> None:
-        self.execute_ddl(self.dialect.drop_schema)
+        self.execute_statement(self.dialect.drop_schema)
 
     def create_tables(self) -> None:
         for ddl in self.dialect.create_tables.split(";"):
@@ -62,7 +71,7 @@ class BaseDbClient(ABC):
             if ddl:
                 ddl = f"{ddl};"
                 print(ddl)
-                self.execute_ddl(ddl)
+                self.execute_statement(ddl)
 
     def drop_tables(self) -> None:
         for ddl in self.dialect.drop_tables.split(";"):
@@ -70,7 +79,7 @@ class BaseDbClient(ABC):
             if ddl:
                 ddl = f"{ddl};"
                 print(ddl)
-                self.execute_ddl(ddl)
+                self.execute_statement(ddl)
 
 
 TypeDbClient = TypeVar('TypeDbClient', bound=BaseDbClient)

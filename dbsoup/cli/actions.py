@@ -45,10 +45,16 @@ def new(cmd: Namespace) -> None:
 def up(cmd: Namespace) -> None:
     print("up command")
     migrations = dbsoup_project.migrations()
+    results = db_client.execute_query(db_client.dialect.migrations)
+    print(results)
+    exit()
+    m = migrations[1669617573]
 
-    m = migrations[1669530638]
-    meta = m.meta()
-    print(meta.created_at)
+    t = template_loader.get_template("sqlite/insert/migrations.sql")
+    c = t.render(migration=m)
+    print(c)
+    db_client.execute_statement(c)
+
 
 def down(cmd: Namespace) -> None:
     print("down command")
