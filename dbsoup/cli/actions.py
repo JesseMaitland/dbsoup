@@ -5,7 +5,7 @@ from dbsoup.environment import TemplateLoader
 from dbsoup.environment.variables import DBSOUP_DIALECT, DBSOUP_CONNECTION_STRING
 from dbsoup.core.database.clients import get_db_client
 from dbsoup.core.project import DbSoupProject, Migration
-
+from dbsoup.cli.utils import execute_migrations_up
 
 __version__ = "0.0.0"
 
@@ -43,23 +43,8 @@ def new(cmd: Namespace) -> None:
 
 
 def up(cmd: Namespace) -> None:
-
-    migrations = dbsoup_project.migrations()
     applied_migrations = db_client.get_applied_migrations()
-    import pdb; pdb.set_trace()
-    migrations_to_apply = []
-    for key, migration in migrations.items():
-        if key not in applied_migrations:
-            migrations_to_apply.append(migration)
-
-    migrations_to_apply.sort(key=lambda x: x.key)
-    insert_template = template_loader.get_template("sqlite/insert/migrations.sql")
-
-    for migration in migrations_to_apply:
-        db_client.execute_statement(migration.up())
-
-        insert_statement = insert_template.render(migration=migration, meta=migration.meta())
-        db_client.execute_statement(insert_statement)
+    execute_migrations_up(db_client, dbsoup_project, applied_migrations)
 
 
 def down(cmd: Namespace) -> None:

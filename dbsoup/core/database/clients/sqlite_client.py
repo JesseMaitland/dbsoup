@@ -13,10 +13,15 @@ class SqliteClient(BaseDbClient):
     def get_connection(self) -> Any:
         return sqlite3.connect(self.connection_string)
 
-    def execute_statement(self, statement: str) -> None:
+    def execute_statement(self, statement: str, *args, **kwargs) -> None:
         with self.get_connection() as connection:
             with closing(connection.cursor()) as cursor:
-                cursor.execute(statement)
+                if args:
+                    cursor.execute(statement, args)
+                elif kwargs:
+                    cursor.execute(statement, kwargs)
+                else:
+                    cursor.execute(statement)
                 connection.commit()
 
     def execute_query(self, query: str) -> Tuple[Any]:

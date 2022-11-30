@@ -2,7 +2,7 @@ import re
 import io
 import yaml
 import shutil
-from typing import Optional, Dict
+from typing import Optional, Dict, Any, List
 from pathlib import Path
 from datetime import datetime
 
@@ -77,6 +77,23 @@ class Migration:
     def down(self) -> str:
         return self.content.partition("--<migrate: down>")[2]
 
+    def get_migration_table_insert_args(self, method: str) -> Dict[str, Any]:
+        meta = self.meta()
+        return {
+            "key": self.key,
+            "migration_name": self.name,
+            "meta_created_by": meta.created_by,
+            "meta_team_name": meta.team_name,
+            "meta_feature": meta.feature,
+            "meta_what": meta.what,
+            "meta_why": meta.why,
+            "meta_description": meta.description,
+            "meta_ticket": meta.ticket,
+            "method": method,
+            "migration_up": self.up(),
+            "migration_down": self.down(),
+        }
+
 
 class DbSoupProject:
 
@@ -97,3 +114,13 @@ class DbSoupProject:
             migration = Migration.from_filename(file.name)
             migrations[migration.key] = migration
         return migrations
+
+    def migrations_to_apply(self, applied_migrations: List[int]) -> List[Migration]:
+        migrations_to_apply = []
+
+        for key, migration in self.migrations().items():
+            if key not in applied_migrations:
+                migrations_to_apply.append(migration)
+
+        migrations_to_apply.sort(key=lambda x: x.key)
+        return migrations_to_apply

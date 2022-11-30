@@ -29,8 +29,16 @@ class SqlDialect:
         return self.dialect_path.joinpath("tables/drop.sql").read_text()
 
     @property
-    def migrations(self) -> str:
-        return self.dialect_path.joinpath("queries/migrations.sql").read_text()
+    def applied_migrations(self) -> str:
+        return self.dialect_path.joinpath("queries/applied_migrations.sql").read_text()
+
+    @property
+    def insert_applied_migration(self) -> str:
+        return self.dialect_path.joinpath("insert/applied_migrations.sql").read_text()
+
+    @property
+    def insert_migration_history(self) -> str:
+        return self.dialect_path.joinpath("insert/migration_history.sql").read_text()
 
 
 class BaseDbClient(ABC):
@@ -44,7 +52,7 @@ class BaseDbClient(ABC):
         pass
 
     @abstractmethod
-    def execute_statement(self, ddl: str) -> None:
+    def execute_statement(self, ddl: str, *args, **kwargs) -> None:
         pass
 
     @abstractmethod
@@ -60,7 +68,7 @@ class BaseDbClient(ABC):
         pass
 
     def get_applied_migrations(self) -> List[int]:
-        return [i[0] for i in self.execute_query(self.dialect.migrations)]
+        return [i[0] for i in self.execute_query(self.dialect.applied_migrations)]
 
     def create_schema(self) -> None:
         self.execute_statement(self.dialect.create_schema)
@@ -83,6 +91,5 @@ class BaseDbClient(ABC):
                 ddl = f"{ddl};"
                 print(ddl)
                 self.execute_statement(ddl)
-
 
 TypeDbClient = TypeVar('TypeDbClient', bound=BaseDbClient)

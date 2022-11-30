@@ -1,2 +1,2 @@
-DROP TABLE IF EXISTS migrations;
-DROP TABLE IF EXISTS history;
+DROP TABLE IF EXISTS applied_migrations;
+DROP TABLE IF EXISTS migration_history;
